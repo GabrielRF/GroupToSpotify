@@ -120,13 +120,20 @@ def send_message(url):
     message = ('<b>' + title + '</b>' 
         '<a href="' + img + '">.</a>\n'
         '<a href="' + url + '">' + domain + '</a>')
-    bot.send_message(write, message, parse_mode='HTML', 
-        disable_web_page_preview=preview)
+    if len(write) > 5:
+        bot.send_message(write, message, parse_mode='HTML',
+            disable_web_page_preview=preview)
 
 def add_to_playlist(url):
     track_id = url.split('/track/')[1]
     track_id = 'spotify:track:' + track_id
     print(track_id)
+    scope = 'playlist-modify-private'
+    sp_token = util.prompt_for_user_token(user_id, scope,
+        client_id = config['SPOTIFY']['CLIENT_ID'],
+        client_secret = config['SPOTIFY']['CLIENT_SECRET'],
+        redirect_uri = 'http://gabrf.com'
+    )
     if sp_token:
         sp = spotipy.Spotify(auth=sp_token)
         sp.trace = False
@@ -137,6 +144,7 @@ def add_to_playlist(url):
 
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
+    print(message.text)
     urls = get_urls(message.text)
     for url in urls:
         if check_whitelist(url):
