@@ -144,24 +144,26 @@ def add_to_playlist(url):
 
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
-    # print(message.text)
-    urls = get_urls(message.text)
-    for url in urls:
-        if check_whitelist(url):
-            if(check_recent_updates(url, True)):
-                send_message(url)
-                if check_spotify_song(url):
-                    try:
-                    # if True:
-                        add_to_playlist(url)
-                        bot.reply_to(message, 'Música adicionada!')
-                    except:
-                        bot.reply_to(message, 'Ops! Ocorreu algum erro.')
+    if str(message.chat.id) == str(crawl):
+        urls = get_urls(message.text)
+        for url in urls:
+            if check_whitelist(url):
+                if(check_recent_updates(url, True)):
+                    send_message(url)
+                    if check_spotify_song(url):
+                        try:
+                        # if True:
+                            add_to_playlist(url)
+                            bot.reply_to(message, 'Música adicionada!')
+                        except:
+                            bot.reply_to(message, 'Ops! Ocorreu algum erro.')
+                else:
+                    bot.reply_to(message, 'Repetido')
+                    print('repetido')
             else:
-                bot.reply_to(message, 'Repetido')
-                print('repetido')
-        else:
-            print('not ok')
+                print('not ok')
+    else:
+        print('Ignorado')
 
 bot.polling()
 
