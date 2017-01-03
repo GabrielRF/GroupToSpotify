@@ -13,13 +13,8 @@ config.read('/usr/local/bin/GroupToChannel/bot.conf')
 
 arg1 = sys.argv[1]
 
-token = config[arg1]['TOKEN']
-crawl = config[arg1]['CRAWL']
-write = config[arg1]['WRITE']
-history = config[arg1]['SIZE']
-user_id = config[arg1]['USER_ID']
-playlist_id = config[arg1]['PLAYLIST_ID']
-sp_token = config[arg1]['OAUTH_TOKEN']
+token = config['DEFAULT']['TOKEN']
+crawl = config['DEFAULT']['CRAWL']
 
 list_file = '/usr/local/bin/GroupToChannel/lists/' + arg1 + '_whitelist.txt'
 last_updates = '/usr/local/bin/GroupToChannel/logs/' + arg1 + '_log.txt'
@@ -80,7 +75,7 @@ def check_whitelist(text):
             return True
     return False
 
-def add_recent_updates(link):
+def add_recent_updates(link, history):
     try:
         with open(last_updates, 'r') as file:
             lines = file.readlines()
@@ -95,7 +90,7 @@ def add_recent_updates(link):
         for l in lines:
             file.write(l)
 
-def check_recent_updates(param,new):
+def check_recent_updates(param, new, history):
     try:
         updates = open(last_updates,'r')
     except FileNotFoundError:
@@ -106,10 +101,10 @@ def check_recent_updates(param,new):
             new = False
             return new
     if new:
-        add_recent_updates(param)
+        add_recent_updates(param, history)
         return new
 
-def send_message(url):
+def send_message(url, write):
     html = get_html(url)
     try:
         title = get_title(html)
@@ -124,7 +119,7 @@ def send_message(url):
         bot.send_message(write, message, parse_mode='HTML',
             disable_web_page_preview=preview)
 
-def add_to_playlist(url):
+def add_to_playlist(url, user_id, playlist_id):
     track_id = url.split('/track/')[1]
     track_id = 'spotify:track:' + track_id
     print(track_id)
@@ -144,16 +139,23 @@ def add_to_playlist(url):
 
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
-    if str(message.chat.id) == str(crawl):
+    if str(message.chat.id) in str(crawl):
+
+        arg1 = message.chat.id
+        write = config[arg1]['WRITE']
+        history = config[arg1]['SIZE']
+        user_id = config[arg1]['USER_ID']
+        playlist_id = config[arg1]['PLAYLIST_ID']
+
         urls = get_urls(message.text)
         for url in urls:
             if check_whitelist(url):
-                if(check_recent_updates(url, True)):
-                    send_message(url)
+                if(check_recent_updates(url, True, history)):
+                    send_message(url, write)
                     if check_spotify_song(url):
                         try:
                         # if True:
-                            add_to_playlist(url)
+                            add_to_playlist(url, user_id, playlist_id)
                             bot.reply_to(message, 'Música adicionada!')
                         except:
                             bot.reply_to(message, 'Ops! Ocorreu algum erro.')
