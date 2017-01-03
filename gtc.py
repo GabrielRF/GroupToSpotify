@@ -130,8 +130,8 @@ def add_to_playlist(url):
     print(track_id)
     scope = 'playlist-modify-private'
     sp_token = util.prompt_for_user_token(user_id, scope,
-        client_id = config['SPOTIFY']['CLIENT_ID'],
-        client_secret = config['SPOTIFY']['CLIENT_SECRET'],
+        client_id = config[arg1]['CLIENT_ID'],
+        client_secret = config[arg1]['CLIENT_SECRET'],
         redirect_uri = 'http://gabrf.com'
     )
     if sp_token:
@@ -144,15 +144,21 @@ def add_to_playlist(url):
 
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
-    print(message.text)
+    # print(message.text)
     urls = get_urls(message.text)
     for url in urls:
         if check_whitelist(url):
             if(check_recent_updates(url, True)):
                 send_message(url)
                 if check_spotify_song(url):
-                    add_to_playlist(url)
+                    try:
+                    # if True:
+                        add_to_playlist(url)
+                        bot.reply_to(message, 'Música adicionada!')
+                    except:
+                        bot.reply_to(message, 'Ops! Ocorreu algum erro.')
             else:
+                bot.reply_to(message, 'Repetido')
                 print('repetido')
         else:
             print('not ok')
