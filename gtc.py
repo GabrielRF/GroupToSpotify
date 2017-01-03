@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 import configparser
 import re
 import requests
+import spotipy
+import spotipy.util as util
 import sys
 import telebot
 
@@ -15,6 +17,9 @@ token = config[arg1]['TOKEN']
 crawl = config[arg1]['CRAWL']
 write = config[arg1]['WRITE']
 history = config[arg1]['SIZE']
+user_id = config[arg1]['USER_ID']
+playlist_id = config[arg1]['PLAYLIST_ID']
+sp_token = config[arg1]['OAUTH_TOKEN']
 
 list_file = '/usr/local/bin/GroupToChannel/lists/' + arg1 + '_whitelist.txt'
 last_updates = '/usr/local/bin/GroupToChannel/logs/' + arg1 + '_log.txt'
@@ -57,6 +62,12 @@ def get_img(html):
         img = ''
         preview = True
     return preview, img
+
+def check_spotify_song(url):
+    if 'open.spotify.com/track/' in url:
+        return True
+    else:
+        return False
 
 def check_whitelist(text):
     try:
@@ -112,6 +123,18 @@ def send_message(url):
     bot.send_message(write, message, parse_mode='HTML', 
         disable_web_page_preview=preview)
 
+def add_to_playlist(url):
+    track_id = url.split('/track/')[1]
+    track_id = 'spotify:track:' + track_id
+    print(track_id)
+    if sp_token:
+        sp = spotipy.Spotify(auth=sp_token)
+        sp.trace = False
+        results = sp.user_playlist_add_tracks(user_id, playlist_id, [track_id])
+        print(results)
+    else:
+        print("Can't get token for", user_id)
+
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
     urls = get_urls(message.text)
@@ -119,6 +142,8 @@ def echo_all(message):
         if check_whitelist(url):
             if(check_recent_updates(url, True)):
                 send_message(url)
+                if check_spotify_song(url):
+                    add_to_playlist(url)
             else:
                 print('repetido')
         else:
