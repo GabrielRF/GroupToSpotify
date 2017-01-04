@@ -1,3 +1,4 @@
+.cache*
 bot.conf
 lists/
 logs/
