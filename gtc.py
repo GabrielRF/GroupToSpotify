@@ -7,17 +7,16 @@ import spotipy.util as util
 import sys
 import telebot
 
+folder = '/usr/local/bin/GroupToChannel/'
+
 config = configparser.ConfigParser()
 config.sections()
-config.read('/usr/local/bin/GroupToChannel/bot.conf')
+config.read('bot.conf')
 
 arg1 = sys.argv[1]
 
 token = config['DEFAULT']['TOKEN']
 crawl = config['DEFAULT']['CRAWL']
-
-list_file = '/usr/local/bin/GroupToChannel/lists/' + arg1 + '_whitelist.txt'
-last_updates = '/usr/local/bin/GroupToChannel/logs/' + arg1 + '_log.txt'
 
 bot = telebot.TeleBot(token)
 
@@ -64,7 +63,7 @@ def check_spotify_song(url):
     else:
         return False
 
-def check_whitelist(text):
+def check_whitelist(text, list_file):
     try:
         listwords = open(list_file, 'r', encoding="utf-8")
     except FileNotFoundError:
@@ -75,7 +74,7 @@ def check_whitelist(text):
             return True
     return False
 
-def add_recent_updates(link, history):
+def add_recent_updates(link, history, last_updates):
     try:
         with open(last_updates, 'r') as file:
             lines = file.readlines()
@@ -90,7 +89,7 @@ def add_recent_updates(link, history):
         for l in lines:
             file.write(l)
 
-def check_recent_updates(param, new, history):
+def check_recent_updates(param, new, history, last_updates):
     try:
         updates = open(last_updates,'r')
     except FileNotFoundError:
@@ -101,7 +100,7 @@ def check_recent_updates(param, new, history):
             new = False
             return new
     if new:
-        add_recent_updates(param, history)
+        add_recent_updates(param, history, last_updates)
         return new
 
 def send_message(url, write):
@@ -137,20 +136,28 @@ def add_to_playlist(url, user_id, playlist_id):
     else:
         print("Can't get token for", user_id)
 
+def check_group(message.chat.id):
+    if str(message.chat.id) in str(crawl):
+        return True
+    else:
+        return False
+
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
-    if str(message.chat.id) in str(crawl):
+    if check_group(message.chat.id) and message.chat.id < 0:
 
         arg1 = message.chat.id
         write = config[arg1]['WRITE']
         history = config[arg1]['SIZE']
         user_id = config[arg1]['USER_ID']
         playlist_id = config[arg1]['PLAYLIST_ID']
+        list_file = folder + 'lists/' + arg1 + '_whitelist.txt'
+        last_updates = folder + 'logs/' + arg1 + '_log.txt'
 
         urls = get_urls(message.text)
         for url in urls:
-            if check_whitelist(url):
-                if(check_recent_updates(url, True, history)):
+            if check_whitelist(url, list_file):
+                if(check_recent_updates(url, True, history, last_updates)):
                     send_message(url, write)
                     if check_spotify_song(url):
                         try:
@@ -164,6 +171,8 @@ def echo_all(message):
                     print('repetido')
             else:
                 print('not ok')
+    elif message.chat.id > 0:
+        bot.reply_to(message, 'Em desenvolvimento')
     else:
         print('Ignorado')
 
