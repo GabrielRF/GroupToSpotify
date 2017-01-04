@@ -6,7 +6,7 @@ import spotipy
 import spotipy.util as util
 import telebot
 
-folder = '/home/gabrielferreira/Git/GroupToSpotify/'
+folder = '/usr/local/bin/GroupToChannel/'
 
 config = configparser.ConfigParser()
 config.sections()
@@ -140,8 +140,8 @@ def check_group(message):
 
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
+    # print(str(message.chat.id) + '\t' + str(message.text))
     if check_group(message) and int(message.chat.id) < 0:
-        print(message.text)
         arg1 = message.chat.id
         arg1 = str(arg1).replace('-','')
         write = config[arg1]['WRITE']
@@ -159,6 +159,7 @@ def echo_all(message):
                     if check_spotify_song(url):
                         try:
                         # if True:
+                            print(str(message.chat.id) + '\t' + str(message.text))
                             add_to_playlist(arg1, url, user_id, playlist_id)
                             bot.reply_to(message,
                                 'Música adicionada à '
