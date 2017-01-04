@@ -160,7 +160,13 @@ def echo_all(message):
                         try:
                         # if True:
                             add_to_playlist(arg1, url, user_id, playlist_id)
-                            bot.reply_to(message, 'Música adicionada!')
+                            bot.reply_to(message,
+                                'Música adicionada à '
+                                + '<a href="https://open.spotify.com/user/'
+                                + user_id + '/playlist/' + playlist_id
+                                + '">playlist.</a>', parse_mode='HTML',
+                                disable_web_page_preview=True
+                            )
                         except:
                             bot.reply_to(message, 'Ops! Ocorreu algum erro.')
                 else:
