@@ -19,7 +19,6 @@ write = config[arg1]['WRITE']
 history = config[arg1]['SIZE']
 user_id = config[arg1]['USER_ID']
 playlist_id = config[arg1]['PLAYLIST_ID']
-sp_token = config[arg1]['OAUTH_TOKEN']
 
 list_file = '/usr/local/bin/GroupToChannel/lists/' + arg1 + '_whitelist.txt'
 last_updates = '/usr/local/bin/GroupToChannel/logs/' + arg1 + '_log.txt'
