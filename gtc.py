@@ -10,7 +10,7 @@ folder = '/usr/local/bin/GroupToChannel/'
 
 config = configparser.ConfigParser()
 config.sections()
-config.read('bot.conf')
+config.read(folder + 'bot.conf')
 
 token = config['DEFAULT']['TOKEN']
 
