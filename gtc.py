@@ -4,24 +4,15 @@ import re
 import requests
 import spotipy
 import spotipy.util as util
-import sys
 import telebot
+
+folder = '/home/gabrielferreira/Git/GroupToSpotify/'
 
 config = configparser.ConfigParser()
 config.sections()
-config.read('/usr/local/bin/GroupToChannel/bot.conf')
+config.read('bot.conf')
 
-arg1 = sys.argv[1]
-
-token = config[arg1]['TOKEN']
-crawl = config[arg1]['CRAWL']
-write = config[arg1]['WRITE']
-history = config[arg1]['SIZE']
-user_id = config[arg1]['USER_ID']
-playlist_id = config[arg1]['PLAYLIST_ID']
-
-list_file = '/usr/local/bin/GroupToChannel/lists/' + arg1 + '_whitelist.txt'
-last_updates = '/usr/local/bin/GroupToChannel/logs/' + arg1 + '_log.txt'
+token = config['DEFAULT']['TOKEN']
 
 bot = telebot.TeleBot(token)
 
@@ -68,7 +59,7 @@ def check_spotify_song(url):
     else:
         return False
 
-def check_whitelist(text):
+def check_whitelist(text, list_file):
     try:
         listwords = open(list_file, 'r', encoding="utf-8")
     except FileNotFoundError:
@@ -79,7 +70,7 @@ def check_whitelist(text):
             return True
     return False
 
-def add_recent_updates(link):
+def add_recent_updates(link, history, last_updates):
     try:
         with open(last_updates, 'r') as file:
             lines = file.readlines()
@@ -94,7 +85,7 @@ def add_recent_updates(link):
         for l in lines:
             file.write(l)
 
-def check_recent_updates(param,new):
+def check_recent_updates(param, new, history, last_updates):
     try:
         updates = open(last_updates,'r')
     except FileNotFoundError:
@@ -105,10 +96,10 @@ def check_recent_updates(param,new):
             new = False
             return new
     if new:
-        add_recent_updates(param)
+        add_recent_updates(param, history, last_updates)
         return new
 
-def send_message(url):
+def send_message(url, write):
     html = get_html(url)
     try:
         title = get_title(html)
@@ -123,7 +114,7 @@ def send_message(url):
         bot.send_message(write, message, parse_mode='HTML',
             disable_web_page_preview=preview)
 
-def add_to_playlist(url):
+def add_to_playlist(arg1, url, user_id, playlist_id):
     track_id = url.split('/track/')[1]
     track_id = 'spotify:track:' + track_id
     print(track_id)
@@ -131,7 +122,7 @@ def add_to_playlist(url):
     sp_token = util.prompt_for_user_token(user_id, scope,
         client_id = config[arg1]['CLIENT_ID'],
         client_secret = config[arg1]['CLIENT_SECRET'],
-        redirect_uri = 'http://gabrf.com'
+        redirect_uri = config[arg1]['REDIR_URI']
     )
     if sp_token:
         sp = spotipy.Spotify(auth=sp_token)
@@ -141,19 +132,41 @@ def add_to_playlist(url):
     else:
         print("Can't get token for", user_id)
 
+def check_group(message):
+    if config.has_section(str(message.chat.id).replace('-','')):
+        return True
+    else:
+        return False
+
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
-    if str(message.chat.id) == str(crawl):
+    if check_group(message) and int(message.chat.id) < 0:
+        print(message.text)
+        arg1 = message.chat.id
+        arg1 = str(arg1).replace('-','')
+        write = config[arg1]['WRITE']
+        history = config[arg1]['SIZE']
+        user_id = config[arg1]['USER_ID']
+        playlist_id = config[arg1]['PLAYLIST_ID']
+        list_file = folder + 'lists/' + arg1 + '_whitelist.txt'
+        last_updates = folder + 'logs/' + arg1 + '_log.txt'
+
         urls = get_urls(message.text)
         for url in urls:
-            if check_whitelist(url):
-                if(check_recent_updates(url, True)):
-                    send_message(url)
+            if check_whitelist(url, list_file):
+                if(check_recent_updates(url, True, history, last_updates)):
+                    send_message(url, write)
                     if check_spotify_song(url):
                         try:
                         # if True:
-                            add_to_playlist(url)
-                            bot.reply_to(message, 'Música adicionada!')
+                            add_to_playlist(arg1, url, user_id, playlist_id)
+                            bot.reply_to(message,
+                                'Música adicionada à '
+                                + '<a href="https://open.spotify.com/user/'
+                                + user_id + '/playlist/' + playlist_id
+                                + '">playlist.</a>', parse_mode='HTML',
+                                disable_web_page_preview=True
+                            )
                         except:
                             bot.reply_to(message, 'Ops! Ocorreu algum erro.')
                 else:
@@ -161,6 +174,8 @@ def echo_all(message):
                     print('repetido')
             else:
                 print('not ok')
+    elif message.chat.id > 0:
+        bot.reply_to(message, 'Em desenvolvimento')
     else:
         print('Ignorado')
 
