@@ -4,16 +4,13 @@ import re
 import requests
 import spotipy
 import spotipy.util as util
-import sys
 import telebot
 
-folder = '/usr/local/bin/GroupToChannel/'
+folder = '/home/gabrielferreira/Git/GroupToSpotify/'
 
 config = configparser.ConfigParser()
 config.sections()
 config.read('bot.conf')
-
-arg1 = sys.argv[1]
 
 token = config['DEFAULT']['TOKEN']
 crawl = config['DEFAULT']['CRAWL']
@@ -118,7 +115,7 @@ def send_message(url, write):
         bot.send_message(write, message, parse_mode='HTML',
             disable_web_page_preview=preview)
 
-def add_to_playlist(url, user_id, playlist_id):
+def add_to_playlist(arg1, url, user_id, playlist_id):
     track_id = url.split('/track/')[1]
     track_id = 'spotify:track:' + track_id
     print(track_id)
@@ -136,7 +133,7 @@ def add_to_playlist(url, user_id, playlist_id):
     else:
         print("Can't get token for", user_id)
 
-def check_group(message.chat.id):
+def check_group(message):
     if str(message.chat.id) in str(crawl):
         return True
     else:
@@ -144,9 +141,10 @@ def check_group(message.chat.id):
 
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
-    if check_group(message.chat.id) and message.chat.id < 0:
-
+    if check_group(message) and int(message.chat.id) < 0:
+        print(message.text)
         arg1 = message.chat.id
+        arg1 = str(arg1).replace('-','')
         write = config[arg1]['WRITE']
         history = config[arg1]['SIZE']
         user_id = config[arg1]['USER_ID']
@@ -162,7 +160,7 @@ def echo_all(message):
                     if check_spotify_song(url):
                         try:
                         # if True:
-                            add_to_playlist(url, user_id, playlist_id)
+                            add_to_playlist(arg1, url, user_id, playlist_id)
                             bot.reply_to(message, 'Música adicionada!')
                         except:
                             bot.reply_to(message, 'Ops! Ocorreu algum erro.')
