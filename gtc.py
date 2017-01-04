@@ -13,7 +13,6 @@ config.sections()
 config.read('bot.conf')
 
 token = config['DEFAULT']['TOKEN']
-crawl = config['DEFAULT']['CRAWL']
 
 bot = telebot.TeleBot(token)
 
@@ -123,7 +122,7 @@ def add_to_playlist(arg1, url, user_id, playlist_id):
     sp_token = util.prompt_for_user_token(user_id, scope,
         client_id = config[arg1]['CLIENT_ID'],
         client_secret = config[arg1]['CLIENT_SECRET'],
-        redirect_uri = 'http://gabrf.com'
+        redirect_uri = config[arg1]['REDIR_URI']
     )
     if sp_token:
         sp = spotipy.Spotify(auth=sp_token)
@@ -134,7 +133,7 @@ def add_to_playlist(arg1, url, user_id, playlist_id):
         print("Can't get token for", user_id)
 
 def check_group(message):
-    if str(message.chat.id) in str(crawl):
+    if config.has_section(str(message.chat.id).replace('-','')):
         return True
     else:
         return False
