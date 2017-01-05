@@ -64,6 +64,9 @@ def check_whitelist(text, list_file):
         listwords = open(list_file, 'r', encoding="utf-8")
     except FileNotFoundError:
         create_file(list_file)
+        f = open(list_file, 'w')
+        f.write('open.spotify.com/track/')
+        f.close()
         listwords = open(list_file, 'r', encoding="utf-8")
     for word in listwords.readlines():
         if word.title().replace('\n','') in text.title():
