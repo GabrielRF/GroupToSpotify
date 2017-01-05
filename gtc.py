@@ -99,7 +99,7 @@ def check_recent_updates(param, new, history, last_updates):
             new = False
             return new
     if new:
-        add_recent_updates(param, history, last_updates)
+        # add_recent_updates(param, history, last_updates)
         return new
 
 def send_message(url, write):
@@ -171,6 +171,7 @@ def echo_all(message):
                                 + '">playlist.</a>', parse_mode='HTML',
                                 disable_web_page_preview=True
                             )
+                            add_recent_updates(url, history, last_updates)
                         except:
                             bot.reply_to(message, 'Ops! Ocorreu algum erro.')
                 else:
