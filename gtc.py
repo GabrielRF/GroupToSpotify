@@ -121,7 +121,7 @@ def add_to_playlist(arg1, url, user_id, playlist_id):
     track_id = url.split('/track/')[1]
     track_id = 'spotify:track:' + track_id
     print(track_id)
-    scope = 'playlist-modify-private'
+    scope = 'playlist-modify-public playlist-modify-private'
     sp_token = util.prompt_for_user_token(user_id, scope,
         client_id = config[arg1]['CLIENT_ID'],
         client_secret = config[arg1]['CLIENT_SECRET'],
