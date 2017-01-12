@@ -4,6 +4,8 @@ http://telegram.me/SpotifyRobot_bot
 
 Bot que captura todas as músicas do Spotify compartilhadas via link em um grupo e as coloca em uma playlist.
 
+![GroupToSpotify](http://i.imgur.com/Gw43LAZ.png)
+
 ===
 
 ## Configuração
