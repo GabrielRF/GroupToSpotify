@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import configparser
+import random
 import re
 import requests
 import spotipy
@@ -151,6 +152,7 @@ def echo_all(message):
         history = config[arg1]['SIZE']
         user_id = config[arg1]['USER_ID']
         playlist_id = config[arg1]['PLAYLIST_ID']
+        evil = config[arg1]['EVIL']
         list_file = folder + 'lists/' + arg1 + '_whitelist.txt'
         last_updates = folder + 'logs/' + arg1 + '_log.txt'
 
@@ -164,13 +166,27 @@ def echo_all(message):
                         # if True:
                             print(str(message.chat.id) + '\t' + str(message.text))
                             add_to_playlist(arg1, url, user_id, playlist_id)
-                            bot.reply_to(message,
-                                'Música adicionada à '
-                                + '<a href="https://open.spotify.com/user/'
-                                + user_id + '/playlist/' + playlist_id
-                                + '">playlist.</a>', parse_mode='HTML',
-                                disable_web_page_preview=True
-                            )
+                            if evil:
+                                try:
+                                    answers = open('evil/' + arg1 + '_evil.txt').read().splitlines()
+                                except:
+                                    create_file('evil/' + arg1 + '_evil.txt')
+                                    answers = open('evil/' + arg1 + '_evil.txt').read().splitlines()
+                                answer = random.choice(answers)
+                                answer = (
+                                        answer + '<a href="https://open.spotify.com/user/'
+                                        + user_id + '/playlist/' + playlist_id
+                                        + '"> Playlist.</a>'
+                                    )
+                                bot.reply_to(message, answer, parse_mode='HTML', disable_web_page_preview=True)
+                            else:
+                                bot.reply_to(message,
+                                    'Música adicionada à '
+                                    + '<a href="https://open.spotify.com/user/'
+                                    + user_id + '/playlist/' + playlist_id
+                                    + '">playlist.</a>', parse_mode='HTML',
+                                    disable_web_page_preview=True
+                                )
                             add_recent_updates(url, history, last_updates)
                         except:
                             bot.reply_to(message, 'Ops! Ocorreu algum erro.')
