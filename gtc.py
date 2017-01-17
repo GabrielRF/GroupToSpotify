@@ -166,7 +166,7 @@ def echo_all(message):
                         # if True:
                             print(str(message.chat.id) + '\t' + str(message.text))
                             add_to_playlist(arg1, url, user_id, playlist_id)
-                            if evil:
+                            if evil == 'True':
                                 try:
                                     answers = open('evil/' + arg1 + '_evil.txt').read().splitlines()
                                 except:
@@ -195,6 +195,11 @@ def echo_all(message):
                     print('repetido')
             else:
                 print('not ok')
+    elif message.chat.id == 9083329 or message.chat.id == 83681653:
+        if '/t ' in message.text:
+            bot.reply_to(message, message.text.replace('/t ',''), parse_mode='HTML')
+        else:
+            bot.send_message('-124344833', message.text, parse_mode='HTML')
     elif message.chat.id > 0:
         bot.reply_to(message, 'Em desenvolvimento')
     else:
