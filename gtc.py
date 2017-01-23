@@ -142,7 +142,23 @@ def check_group(message):
     else:
         return False
 
-@bot.message_handler(func=lambda m: True)
+@bot.message_handler(content_types=['sticker'])
+def echo_all(message):
+    if message.chat.id == 9083329 or message.chat.id == 83681653:
+    # print(message.sticker.file_id)
+    # print(message.sticker)
+        sticker = message.sticker.file_id
+        bot.send_sticker('-124344833', str(sticker))
+
+@bot.message_handler(content_types=['document'])
+def echo_all(message):
+    if message.chat.id == 9083329 or message.chat.id == 83681653:
+    # print(message.document.file_id)
+    # print(message.document)
+        gif = message.document.file_id
+        bot.send_sticker('-124344833', str(gif))
+
+@bot.message_handler(func=lambda m: True, content_types=['text'])
 def echo_all(message):
     # print(str(message.chat.id) + '\t' + str(message.text))
     if check_group(message) and int(message.chat.id) < 0:
@@ -200,6 +216,7 @@ def echo_all(message):
             bot.reply_to(message, message.text.replace('/t ',''), parse_mode='HTML')
         else:
             bot.send_message('-124344833', message.text, parse_mode='HTML')
+            # bot.send_message('9083329', message.text, parse_mode='HTML')
     elif message.chat.id > 0:
         bot.reply_to(message, 'Em desenvolvimento')
     else:
